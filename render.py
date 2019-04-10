@@ -5,7 +5,7 @@
 # Release countdown banner generation script
 # by Pascal Bleser <pascal.bleser@opensuse.org>
 # Artwork by jimmac
-#
+# Artwork for Leap 42.3 by Victorhck
 
 import sys
 import datetime
@@ -18,9 +18,14 @@ import tempfile
 import shutil
 import atexit
 
-VERSION = "13.2"
+# VERSION should be a release number or "conference" as in the following examples:
+# VERSION = "13.2"
+# VERSION = "conference"
+VERSION = "15.1"
+
 # UTC timestamp!
-RELEASE = datetime.datetime(2014, 11, 04, 12, 0, 0)
+RELEASE = datetime.datetime(2019, 05, 22, 10, 0, 0)
+
 
 VARIANTS = ["label", "nolabel"]
 
@@ -65,14 +70,89 @@ def msg_sk(n):
         post = u'dní'
     return u'Už len', post
 
+def msg_pl(n):
+    if n == 1:
+        post = u'godzinę'
+    elif n <= 4:
+        post = u'godziny'
+    else:
+        post = u'godzin'
+    return u'Dostępne za', post
+
+def msg_pl_days(n):
+    if n == 1:
+        pre = u'Pozostał tylko'
+        post = u'dzień'
+    elif n <= 4:
+        pre = u'Pozostały tylko'
+        post = u'dni'
+    else:
+        pre = u'Pozostało tylko'
+        post = u'dni'
+    return u'Dostępne za', post
+
+def msg_pl_conference(n):
+    if n == 1:
+        post = u'godzinę'
+    elif n <= 4:
+        post = u'godziny'
+    else:
+        post = u'godzin'
+    return u'Zaczyna się za', post
+
 def msg_lt(n):
     if (n % 10 == 1) and (n != 11):
-        post = u'dienų'
-    else:
         post = u'dienos'
+    else:
+        post = u'dienų'
     return u'Pasirodys po', post
 
-avail = {
+if VERSION == "conference":
+    avail = {
+        'en': u'Join\nUs!',
+        'de': u' Begleiten\nSie Uns !',
+        'ca': u'Uneix-te\na nosaltres!',
+        'sk': u'Pridajte sa!',
+        'fr': u'Rejoignez-\nnous!',
+        'uk': u'Приєднуйтеся!!',
+        'ru': u'Присоединяйся!',
+        'nl': u'Bezoek!',
+        'es': u'¡Únete a nosotros!',
+        'it': u'Unisciti a noi!',
+        'el': u'Ελάτε μαζί μας!',
+        'pl': u'Dołącz\ndo nas!',
+        'pt': u'Junte-se a nós!',
+        'pt_BR': u'Junte-se a nós!',
+        'ja': u'ご参加ください！',
+        'da': u'Vær\nmed!',
+        'nb': u'Bli\nmed!',
+        'nn': u'Bli\nmed!',
+        'lt': u'Dalyvaukite!',
+        'zh': u'加入我们！',
+         }
+
+    almost = {
+        'en': [u'Starts in', [u'hours!', u'hour!']],
+        'ca': [u'Comença d\'aquí a', [u'hores!', u'hora!']],
+        'nl': [u'Begint over', [u'uren!', u'uur']],
+        'fr': [u'Débute dans', [u'heures!', u'heure!']],
+        'de': [u'in', [u'Stunden!', u'Stunde!']],
+        'it': [u'Comincia tra', [u'ore!', u'ora!']],
+        'uk': [u'Розпочнеться через', [u'годин!', u'годину!']],
+        'ru': [u'Начнётся через', [u'часов!', u'час!']],
+        'pt_BR': [u'Começa em!', [u'hours!', u'hour!']],
+        'el': [u'Ξεκινά σε', [u'ώρα!', u'ώρες!']],
+        'es': [u'¡Empieza en', [u'horas!', u'hora!']],
+        'ja': [u'あと [N 時間] で始まります', [u'あと [N 日] で始まりま', u'に始 まります']],
+        'da': [u'Begynder om ', [u'timer!', u'time!']],
+        'nb': [u'Begynner om', [u'timer!', u'time!']],
+        'nn': [u'Begynner om', [u'timar!', u'time!']],
+        'lt': [u'Prasidės po', [u'val.!', u'val.!']],
+        'zh': [u'将在', [u'小时后开始！', u'小时后开始！']],
+        'pl': msg_pl_conference,
+         }
+else:
+    avail = {
         'en': u'Out\nnow!',
         'de': u'Jetzt\nverfügbar!',
         'cs': u'Nyní\ndostupné!',
@@ -93,7 +173,6 @@ avail = {
         'hu': u'Megjelent',
         'ro': u'Disponibil\nacum!',
         'si': u'Zunaj\nZdaj!',
-        'cn': u'盛装发布！',
         'tw': u'盛裝發佈！',
         'id': u'Download\nsekarang',
         'bg': u'довнлоад\nсега!',
@@ -103,11 +182,13 @@ avail = {
         'ge': u'არსებული',
         'lt': u'Išleista!',
         'tr': u'Çıktı!',
+        'zh': u'现已发布！',
+        'pl': u'Dostępne\nteraz!',
+        'af': u'Nou\nbeskikbaar!'
         }
 
-almost = {
+    almost = {
         'en': [u'Release in', [u'hours!', u'hour!']],
-        'cn': [u'即刻登场', [u'小时！', u'小时！']],
         'tw': [u'即刻登場', [u'小時！', u'小時！']],
         'fr': [u'Plus que', [u'heures!', u'heure!']],
         'de': [u'Verfügbar in', [u'Stunden!', u'Stunde!']],
@@ -116,7 +197,10 @@ almost = {
         'es': [u'¡Disponible en', [u'horas!', u'hora!']],
         'lt': [u'Pasirodys po', [u'val.', u'val.']],
         'tr': [u'', [u'saat sonra burada!', u'saat sonra burada!']],
-}
+        'zh': [u'', [u'小时后发布！', u'小时后发布！']],
+        'af': [u'Net', [u'uur bly!', u'ure bly!']],
+#        'pl': msg_pl,
+        }
 
 m = {
         'en': [u'Only', u'days to go', u'', u'day to go'],
@@ -143,30 +227,34 @@ m = {
         'bg': [u'още', u'дин', u'още', u'ден'],
         'ja': [u'いよいよ登場！\nあと', u'日'],
         'wa': [u'Co', u'djoûs a\nratinde', u'Co', u'djoû a ratinde'],
-        'cn': [u'倒数', u'天'],
         'tw': [u'倒數', u'天'],
         'gl': [u'Dispoñible en', u'días', u'Dispoñible en', u'día'],
         'lt': msg_lt,
         'tr': [u'', u'gün kaldı'],
+        'zh': [u'仅剩', u'天'],
+        'pl': msg_pl_days,
+        'af': [u'Net', u'dae bly', u'Net', u'dag bly'],
 }
 
 extra = {
         'tr': {
             u'Linux for open minds': u'Açık fikirliler için linux',
-        }
+        },
+        'zh': {
+            u'Linux for open minds': u'Linux 献给开放的思想',
+        },
 }
 
 font_override = {
-        'cn': 'Droid Sans Fallback',
-        'tw': 'Droid Sans Fallback',
-        #'ja': 'Droid Sans Fallback',
-        'ja': 'IPAGothic',
-        #'cn': "AR PL SungtiL GB",
-        #'tw': "AR PL KaitiM Big5",
+        'tw': 'Noto Sans TC',
+        'ja': 'Noto Sans JP',
+        'cn': "Noto Sans SC",
+        'zh': 'Noto Sans SC',
+        'kr': 'Noto Sans KR',
         }
 
-font_to_replace = u'DejaVu Sans'
-default_font = 'FifthLeg'
+font_to_replace = u'Source Sans Pro'
+default_font = 'Source Sans Pro'
 
 if len(args) >= 2:
     outdir = args[1]
@@ -260,6 +348,9 @@ def render(lang, truelang, top1, top2, center, bottom1, bottom2, template_varian
                 if options.verbose:
                     print "skipping %s / %s / %s: template \"%s\" does not exist" % (lang, var, size[2], template)
                     pass
+                if var:
+                    print >>sys.stderr, "Needed template \"%s\" is missing. Aborting" % (template)
+                    sys.exit(1)
                 continue
 
             outfile = "%s/%s%s.%s.png" % (outdir, size[2], var, lang)
